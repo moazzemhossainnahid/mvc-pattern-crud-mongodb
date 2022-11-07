@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { getDb } = require("../Utils/connectToServer");
 
 const products = [
@@ -8,10 +9,11 @@ const products = [
 
 module.exports.getAllProducts = async (req, res, next) => {
     try {
+        const { limit, page } = req.query;
         const db = getDb();
         // cursor => toArray(), forEach()
-        const products = await db.collection("products").find().toArray();
-        res.status(200).json({success: true, data: products})
+        const products = await db.collection("products").find({}).project({ _id: 0 }).skip(+page * limit).limit(+limit).toArray();
+        res.status(200).json({ success: true, data: products })
 
     } catch (error) {
         next(error);
@@ -73,30 +75,57 @@ module.exports.SaveAProducts = async (req, res, next) => {
 // }
 
 module.exports.getProductDetails = async (req, res, next) => {
-    const { id } = req.params;
-    console.log(id);
-    // const foundProduct = products.find(product => product.id == id);
-    const foundProduct = products.find(product => product.id === Number(id));
-    res.send(foundProduct);
-}
+    try {
+        const db = getDb();
+        const { id } = req.params;
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, error: "Not a Valid Products ID." });
+        };
+        const product = await db.collection("products").findOne({ _id: ObjectId(id) });
+        if (!product) {
+            return res.status(400).json({ success: false, error: "Could Not find a Product with this ID." });
+        };
+        res.status(200).json({ success: true, data: products });
+
+    } catch (error) {
+        next(error);
+    };
+};
 
 // Patch
-module.exports.UpdateTool = (req, res) => {
-    // const newData = req.body;
-    const { id } = req.params;
-    const filter = { _id: id };
-    const newData = products.find(project => project.id === Number(id));
-    newData.id = id;
-    newData.name = req.body.name;
-    res.send(newData);
+module.exports.UpdateTool = async (req, res, next) => {
+    try {
+        const db = getDb();
+        const { id } = req.params;
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, error: "Not a Valid Products ID." });
+        };
+        const product = await db.collection("products").updateOne({ _id: ObjectId(id) }, { $set: req.body });
+        if (!product.updatedCount) {
+            return res.status(400).json({ success: false, error: "Could Not find a Product with this ID." });
+        };
+        res.status(200).json({ success: true,  message: "Successfully Updated the Product." });
 
-}
+    } catch (error) {
+        next(error);
+    };
+};
 // Delete
-module.exports.DeleteTool = (req, res) => {
-    // const newData = req.body;
-    const { id } = req.params;
-    const filter = { _id: id };
-    const newData = products.filter(project => project.id !== Number(id));
-    res.send(newData);
+module.exports.DeleteTool = async (req, res, next) => {
+    try {
+        const db = getDb();
+        const { id } = req.params;
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, error: "Not a Valid Products ID." });
+        };
+        const product = await db.collection("products").deleteOne({ _id: ObjectId(id) }, { $set: req.body });
+        if (!product.deletedCount) {
+            return res.status(400).json({ success: false, error: "Could Not find a Product with this ID." });
+        };
+        res.status(200).json({ success: true, message: "Successfully Deleted the Product." });
+
+    } catch (error) {
+        next(error);
+    };
 
 }
