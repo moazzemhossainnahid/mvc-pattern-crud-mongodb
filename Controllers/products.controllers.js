@@ -1,14 +1,28 @@
+const { getDb } = require("../Utils/connectToServer");
+
 const products = [
     { id: 1, name: "Nahid" },
     { id: 2, name: "Ashiq" },
     { id: 3, name: "Jahid" },
 ]
 
-module.exports.getAllProducts = (req, res, next) => {
-    const { limit, page } = req.query;
-    console.log(limit, page);
-    res.json(products.slice(0, limit));
+module.exports.getAllProducts = async (req, res, next) => {
+    try {
+        const db = getDb();
+        // cursor => toArray(), forEach()
+        const products = await db.collection("products").find().toArray();
+        res.status(200).json({success: true, data: products})
+
+    } catch (error) {
+        next(error);
+    };
 };
+
+// module.exports.getAllProducts = (req, res, next) => {
+//     const { limit, page } = req.query;
+//     console.log(limit, page);
+//     res.json(products.slice(0, limit));
+// };
 
 // // Another way to Export Function
 // module.exports.SaveAProducts = (req, res) => {
@@ -17,19 +31,39 @@ module.exports.getAllProducts = (req, res, next) => {
 
 
 // Another way to Export Function
-module.exports.SaveAProducts = (req, res) => {
-    console.log(req.body);
-    products.push(req.body);
-    res.send(products);
-    res.status(200).send({
-        success: true,
-        messages: "Success",
-        data: foundTool
-    });
-    res.status(500).send({
-        success: false,
-        messages: "Internal Server Error"
-    });
+// module.exports.SaveAProducts = (req, res) => {
+//     console.log(req.body);
+//     products.push(req.body);
+//     res.send(products);
+//     res.status(200).send({
+//         success: true,
+//         messages: "Success",
+//         data: foundTool
+//     });
+//     res.status(500).send({
+//         success: false,
+//         messages: "Internal Server Error"
+//     });
+// };
+
+
+// Another way to Export Function
+module.exports.SaveAProducts = async (req, res, next) => {
+    try {
+        const db = getDb();
+        const product = req.body;
+        const result = await db.collection("users").insertOne(req.body);
+        console.log(result);
+
+        if (!result.insertedId) {
+            return (res.status(400).send({ status: false, error: "Something Went Wrong!" }))
+        };
+
+        res.send({ success: true, message: `Product Added with ID: ${result.insertedId}` });
+
+    } catch (error) {
+        next(error);
+    };
 };
 
 // module.exports.getProductDetails = async (req, res, next) => {

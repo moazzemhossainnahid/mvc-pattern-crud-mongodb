@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -5,8 +6,7 @@ const productsRoutes = require('./Routes/v1/tools.route');
 const ViewCount = require('./Middleware/ViewCount');
 const { default: rateLimit } = require('express-rate-limit');
 const errorHandler = require('./Middleware/errorHandler');
-const connectToServer = require('./Utils/connectToServer');
-require('dotenv').config()
+const {connectToServer} = require('./Utils/connectToServer');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -35,7 +35,6 @@ connectToServer((err) => {
 });
 
 app.use("/api/v1/products", productsRoutes);
-
 
 app.get('/', (req, res) => {
     // res.send("Running PC Hub BD Server");
