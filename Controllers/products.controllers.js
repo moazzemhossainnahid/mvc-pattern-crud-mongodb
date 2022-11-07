@@ -104,7 +104,7 @@ module.exports.UpdateTool = async (req, res, next) => {
         if (!product.updatedCount) {
             return res.status(400).json({ success: false, error: "Could Not find a Product with this ID." });
         };
-        res.status(200).json({ success: true,  message: "Successfully Updated the Product." });
+        res.status(200).json({ success: true, message: "Successfully Updated the Product." });
 
     } catch (error) {
         next(error);
@@ -128,4 +128,17 @@ module.exports.DeleteTool = async (req, res, next) => {
         next(error);
     };
 
+}
+
+module.exports.test = async (req, res, next) => {
+    for (let i = 0; i < 100000; i++) {
+        const db = getDb();
+        db.collection("test").insertOne({ name: `test ${i}`, age: i })
+    }
+}
+
+module.exports.testGet = async (req, res, next) => {
+    const db = getDb();
+    const result = await db.collection("test").find({ age: 99999 }).toArray();
+    res.json(result);
 }

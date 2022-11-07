@@ -68,11 +68,15 @@ router.route("/")
 
     .post(ToolsController.SaveAProducts)
 
+router.route("/test")
+    .post(ToolsController.test)
+    .get(ToolsController.testGet)
+
 router
-.route("/:id")
-.get( ToolsController.getProductDetails)
-.patch(ToolsController.UpdateTool)
-.delete(ToolsController.DeleteTool)
+    .route("/:id")
+    .get(ToolsController.getProductDetails)
+    .patch(ToolsController.UpdateTool)
+    .delete(ToolsController.DeleteTool)
 
 
 module.exports = router;
